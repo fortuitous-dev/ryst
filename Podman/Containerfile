@@ -1,0 +1,15 @@
+FROM alpine:latest
+WORKDIR /app
+ENV SSHUSER=myuser
+# The SSH user to create
+RUN apk --no-cache add dropbear rsync &&\
+    mkdir -p /home/$SSHUSER/.ssh &&\
+    chmod  700 /home/$SSHUSER/.ssh &&\
+    adduser -s /bin/sh -D $SSHUSER --home /home/$SSHUSER &&\
+    chown -R $SSHUSER:$SSHUSER /home/$SSHUSER
+
+COPY ssh/podman_ssh_id.pub /home/$SSHUSER/.ssh/authorized_keys
+RUN chown -R $SSHUSER:$SSHUSER /home/$SSHUSER
+
+EXPOSE 2222
+CMD ["/bin/sh", "-c", "/usr/sbin/dropbear -RFEwgsjk -G ${SSHUSER} -p 2222"]

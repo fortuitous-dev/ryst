@@ -1,0 +1,28 @@
+#-------------------------------------------------------
+# This is the configuration file for Rsync Tool (rst)
+# This tool is meant to be used on a per directory basis
+#  so that EITHER $dest or $source is the current dir "."
+#-------------------------------------------------------
+# source=fortuitous.dyndns.org:.
+# source file. can be ./ or server:path/to/here/
+# dest should be user@host:. or .
+source=./
+dest=groucho.marx:.
+dest=chico.marx:.
+# dest=beppo.marx:.
+# dest=gummo.marx:.
+# exclude can be any pattern (no quotes)
+# exclude=.*
+# Exclude all .git and cvs folders
+cvs-exclude=yes
+# exclude-from can be any pattern (no quotes)
+exclude-from=data/.exclude
+exclude=.include
+# include-from=.include
+# delete the cruft on the receiving side?
+delete=yes
+# Execute commands after finishing
+# postcommand="ssh orion.marx /home/carinhas/bin/mysuspend &"
+verbose=no
+compress=yes
+dry-run=yes

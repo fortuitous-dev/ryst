@@ -1,0 +1,20 @@
+[package]
+name = "ryst"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "ryst_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ryst"
+path = "src/ryst.rs"
+
+[dependencies]
+
+which = "5"
+regex = "1.10"
+lazy_static = "1.4"
