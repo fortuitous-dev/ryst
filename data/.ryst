@@ -6,7 +6,8 @@
 # source=fortuitous.dyndns.org:.
 # source file. can be ./ or server:path/to/here/
 # dest should be user@host:. or .
-source=./
+source=./target
+source=./src
 dest=groucho.marx:.
 dest=chico.marx:.
 # dest=beppo.marx:.

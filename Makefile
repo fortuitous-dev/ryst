@@ -1,4 +1,4 @@
-.PHONY: clean tests unit_test integration_tests install
+.PHONY: clean tests unit_tests integration_tests install
 
 tests: unit_tests integration_tests
 

@@ -162,7 +162,8 @@ mod tests {
 
         // Call the function and assert the result
         let output = get_options(test_file);
-        assert!(output.sources.contains(&"./".to_string()));
+        assert!(output.sources.contains(&"./target".to_string()));
+        assert!(output.sources.contains(&"./src".to_string()));
         assert!(output.options.contains(&"-az".to_string()));
         assert!(!output.dests.is_empty());
         println!("actual = {:?}", output);
