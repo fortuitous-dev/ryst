@@ -1,17 +1,18 @@
 #![allow(dead_code)]
 
+use anyhow::{Context, Result};
+use std::io::{BufRead, BufReader};
+use std::process::{Command, Stdio};
+
 use regex::Regex;
 use std::fs::File;
-use std::io::Error;
-use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
-use std::process::Command;
 use which::which;
 
 #[derive(Debug)]
 struct Cmd {
     options: Vec<String>,
-    source: String,
+    sources: Vec<String>,
     dests: Vec<String>,
 }
 
@@ -35,7 +36,7 @@ fn get_options(input_file: &str) -> Cmd {
         .expect(format!("Unable to open configuration file: {:?}", input_file).as_str());
     let reader = BufReader::new(file);
 
-    let mut source = String::new();
+    let mut sources = Vec::new();
     let mut dests = Vec::new();
     let mut options = Vec::new();
     options.push("-az".to_string()); // Add default options -az:
@@ -57,7 +58,7 @@ fn get_options(input_file: &str) -> Cmd {
                 // -----------------------------------------
                 // Set Source
                 if key.contains("source") {
-                    source = value.to_string();
+                    sources.push(value.to_string());
                 // Multiple destinations required
                 } else if key.contains("dest") && !value.is_empty() {
                     dests.push(value.to_string());
@@ -77,55 +78,71 @@ fn get_options(input_file: &str) -> Cmd {
 
     Cmd {
         options,
-        source,
+        sources,
         dests,
     }
 }
 
-pub fn run_rsync(input_file: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let rsync_path = which("rsync").map_err(|e| format!("Failed to find rsync: {}", e))?;
+pub fn run_rsync(input_file: &str) -> Result<()> {
+    let rsync_path = which("rsync").context("Failed to find rsync")?;
     let options = get_options(input_file);
     let mut errors = false;
 
-    for dest in options.dests {
-        // Construct and display the command to be run
-        let mut command = Command::new(&rsync_path);
-        for opt in &options.options {
-            command.arg(opt);
-        }
-        command.arg(&options.source);
-        command.arg(&dest);
-        let command_display = format!("{:?}", command).to_string().replace("\"", "");
-        println!("Running: \"{}\"", command_display);
-
-        // Run the command
-        let output = command.output()?;
-
-        // Print the output in real-time
-        let out_str = String::from_utf8_lossy(&output.stdout);
-        if !out_str.is_empty() {
-            println!("Output:\n{}", out_str);
-        }
-
-        // Print the error in real-time
-        let err_str = String::from_utf8_lossy(&output.stderr);
-        if !err_str.is_empty() {
-            errors = true;
-            eprintln!("{}", "=".repeat(82));
-            eprintln!("Errors:");
-            for line in err_str.lines() {
-                eprintln!("\t{}", line);
+    for source in &options.sources {
+        for dest in &options.dests {
+            // Create a base command with shared options
+            let mut command = Command::new(&rsync_path);
+            for opt in &options.options {
+                command.arg(opt);
             }
-            eprintln!("{}", "=".repeat(82));
+
+            // Clone the base command and add source and destination
+            command.arg(source);
+            command.arg(dest);
+
+            let command_display = format!("{:?}", command).to_string().replace("\"", "");
+            println!("Running: \"{}\"", command_display);
+
+            // Set up the command to use pipes for stdout and stderr
+            command.stdout(Stdio::piped());
+            command.stderr(Stdio::piped());
+
+            // Run the command
+            let mut child = command.spawn().context("Failed to spawn rsync command")?;
+
+            // Read stdout in real-time
+            if let Some(stdout) = child.stdout.take() {
+                let stdout_reader = BufReader::new(stdout);
+                for line in stdout_reader.lines() {
+                    println!("{}", line.context("Failed to read stdout")?);
+                }
+            }
+
+            // Read stderr in real-time
+            if let Some(stderr) = child.stderr.take() {
+                let stderr_reader = BufReader::new(stderr);
+                for line in stderr_reader.lines() {
+                    errors = true;
+                    eprintln!("Error: {}", line.context("Failed to read stderr")?);
+                }
+            }
+
+            // Wait for the command to finish
+            let status = child
+                .wait()
+                .context("Failed to wait for rsync to complete")?;
+
+            if !status.success() {
+                errors = true;
+                eprintln!("Command failed with exit code: {}", status);
+            }
         }
     }
+
     if errors {
-        // Err(format!("{}", 9))?
-        Err(Box::new(Error::new(
-            std::io::ErrorKind::Other,
-            "There were rsync errors: See transcript of output above.",
-        )))?
+        anyhow::bail!("There were rsync errors: See transcript of output above.");
     }
+
     Ok(())
 }
 
@@ -145,19 +162,19 @@ mod tests {
 
         // Call the function and assert the result
         let output = get_options(test_file);
-        assert!(output.source.contains("./"));
+        assert!(output.sources.contains(&"./".to_string()));
         assert!(output.options.contains(&"-az".to_string()));
         assert!(!output.dests.is_empty());
         println!("actual = {:?}", output);
     }
 
     #[test]
-    fn test_run_rsync() -> Result<(), Box<dyn std::error::Error>> {
+    fn test_run_rsync() -> Result<()> {
         // Call the function and assert the result
         let mut path = data_path("data")?;
         path.push(".ryst");
 
-        let path_str = path.to_str().ok_or("Failed to convert PathBuf to str")?;
+        let path_str = path.to_str().expect("Unable to convert path to str");
         let output = run_rsync(path_str);
 
         // We expect both rsyncs to fail, due to non-existant hosts:
