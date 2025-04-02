@@ -5,7 +5,7 @@ mod tests {
     use ryst_lib::{data_path, run_rsync};
 
     #[test]
-    fn test_run_rsync_integration() -> Result<()> {
+    fn test_run_ryst_integration() -> Result<()> {
         let current_dir = std::env::current_dir().unwrap();
         println!("Current directory: {}", current_dir.display());
 
@@ -14,16 +14,12 @@ mod tests {
 
         let path_str = path.to_str().expect("Failed to convert PathBuf to str");
         let output = run_rsync(path_str);
-        println!("   output =>   {:?}", output);
 
         if let Some(e) = output.err() {
-            println!("# ----------------------------------------------------------");
-            println!("# --- test_run_rsync Errors --------------------------------");
-            println!("# ----------------------------------------------------------");
-            for line in e.to_string().trim().split('\n') {
-                println!("   =>   {}", line);
-            }
+            println!("RYST ERRORS: {}", e.to_string());
             assert!(false);
+        } else {
+            assert!(true);
         }
         Ok(())
     }

@@ -8,10 +8,8 @@
 # dest should be user@host:. or .
 source=./target
 source=./src
-dest=groucho.marx:.
-dest=chico.marx:.
-# dest=beppo.marx:.
-# dest=gummo.marx:.
+dest=bogus.loc:.
+dest=fake.loc:.
 # exclude can be any pattern (no quotes)
 # exclude=.*
 # Exclude all .git and cvs folders
@@ -22,8 +20,6 @@ exclude=.include
 # include-from=.include
 # delete the cruft on the receiving side?
 delete=yes
-# Execute commands after finishing
-# postcommand="ssh orion.marx /home/carinhas/bin/mysuspend &"
 verbose=no
 compress=yes
-dry-run=yes
+dry-run=no

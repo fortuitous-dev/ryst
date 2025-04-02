@@ -30,7 +30,9 @@ start_server: build_image stop_server
 
 tests: ssh_config start_server
 	cd ../tests/data/  || echo "Unable to cd to ~/tests/data folder"
-	# ssh myuser@localhost -p 2222 ls -al || exit 1  # Cheap smoke test
+	@echo "================================================="
+	ssh myuser@localhost -p 2222 ls -al || exit 1  # Cheap smoke test
+	@echo "================================================="
 	cargo test --test integration_tests -- --nocapture || echo "Test Failed"
 	$(MAKE) stop_server
 	ssh-keygen -R "[localhost]:2222"

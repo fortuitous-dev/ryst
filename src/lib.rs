@@ -52,7 +52,13 @@ fn get_options(input_file: &str) -> Cmd {
                 let key = _m.get(1).unwrap().as_str();
                 let value = _m.get(2).unwrap().as_str();
                 let bools = ["compress", "cvs-exclude", "delete", "dry-run", "verbose"];
-                let valued = ["bwlimit", "exclude", "exclude-from", "source"];
+                let valued = [
+                    "bwlimit",
+                    "exclude",
+                    "exclude-from",
+                    "include",
+                    "include-from",
+                ];
 
                 // Separate/Define options based on key, val
                 // -----------------------------------------
@@ -182,7 +188,7 @@ mod tests {
         if output.is_err() {
             assert!(true);
         } else {
-            assert!(false)
+            assert!(false, "This test should not pass")
         }
 
         if let Some(e) = output.as_ref().err() {

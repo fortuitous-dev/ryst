@@ -22,4 +22,4 @@ delete=yes
 # postcommand="ssh orion.marx /home/carinhas/bin/mysuspend &"
 verbose=yes
 compress=yes
-dry-run=yes
+dry-run=no
