@@ -95,8 +95,9 @@ The configuration file for this can look like::
    verbose=yes
    exclude-csv=true
 
-This file will copy both *acme* and *tools* folders over to both */data/* and
-the remote *joy@acme.org:backups/* .
+This file will copy both *./acme* and *./tools* folders (relative to the .ryst
+folder location) over to both */data/* and the remote *joy@acme.org:backups/* .
+In addition, all non-source files will be deleted on the destinations.
 
 Use
 ------
@@ -105,7 +106,7 @@ execute::
 
    ryst
 
-.. note::
+.. Note::
 
    You are strongly encouraged to set **dry-run=yes** when setting up the tool
    so that you can avoid early errors. Once the copies look correct, go back and 
@@ -115,13 +116,14 @@ Construction
 ==============
 Ryst is written in Rust. Instead of trying to recreate all the features of rsync
 natively in Rust, we simply wrap the *rsync* tool with the Rust
-std::process::Command utility. This makes adding features very easy and robust.
-
+**std::process::Command** tools. Given the stability and features in *rsync*,
+this makes **ryst** very flavorful and robust.
 
 Potential Improvements
 =========================
 Among the many improvements that could be made, these seem to be prominent:
 
-* Pre and Post copy commands, to shudown databases or services that require it.
+* Pre and Post copy commands, to shutdown databases or services that require
+  syncronization of files before copy.
 * Better tests
 * Support more rsync features
